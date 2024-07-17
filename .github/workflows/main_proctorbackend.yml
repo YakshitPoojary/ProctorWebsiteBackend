@@ -41,8 +41,7 @@ jobs:
           name: python-app
           path: |
             release.zip
-            !venv/
-            cd project
+            !venv/            
 
   deploy:
     runs-on: ubuntu-latest
@@ -78,4 +77,4 @@ jobs:
 
       - name: Configure Startup Command
         run: |
-          az webapp config set --name proctorbackend --startup-file "gunicorn project.project.wsgi --bind=0.0.0.0"
+          az webapp config set --resource-group proctor --name proctorbackend --startup-file "gunicorn project.project.wsgi --bind=0.0.0.0"
