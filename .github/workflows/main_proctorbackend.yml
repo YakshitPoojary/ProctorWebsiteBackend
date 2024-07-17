@@ -79,5 +79,5 @@ jobs:
 
       - name: Configure Startup Command
         run: |
-          az webapp config set --resource-group proctor --name proctorbackend --startup-file "gunicorn project.wsgi --bind=0.0.0.0"
+          az webapp config set --resource-group proctor --name proctorbackend --startup-file "gunicorn project.project.wsgi --bind=0.0.0.0"
           
