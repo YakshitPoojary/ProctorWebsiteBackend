@@ -42,6 +42,7 @@ jobs:
           path: |
             release.zip
             !venv/
+            cd project
 
   deploy:
     runs-on: ubuntu-latest
