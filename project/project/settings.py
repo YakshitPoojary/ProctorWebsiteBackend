@@ -22,7 +22,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True  # Set to False in production
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
