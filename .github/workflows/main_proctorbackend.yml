@@ -79,6 +79,6 @@ jobs:
 
       - name: Configure Startup Command
         run: |
-          az webapp config set --resource-group proctor --name proctorbackend --startup-file "python ../project/manage.py runserver 0.0.0.0:8000"
+          az webapp config set --resource-group proctor --name proctorbackend --startup-file "python /home/site/wwwroot/manage.py runserver 0.0.0.0:8000"
 
           
