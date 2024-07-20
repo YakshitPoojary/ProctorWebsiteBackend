@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
       - name: Create and start virtual environment
         run: |
@@ -41,7 +41,7 @@ jobs:
           name: python-app
           path: |
             release.zip
-            !venv/            
+            !venv/
 
   deploy:
     runs-on: ubuntu-latest
@@ -60,21 +60,25 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_50E9F4D9E7EE40E9A93F4B518F56296A }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0A8132C58E0948A0A1566EFAC30876A7 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D86997EEC5984BFAA765950B239E6E11 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3137435C60FB48D7A3664B76E18B832E }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3210DB14B6934759A29A780EA7E7014F }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3BBF7DD2CA6743C8B1060077651FBA22 }}
+
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'proctorbackend'
+          slot-name: 'Production'
+
 
       - name: Configure Startup Command
         run: |
-          az webapp config set --resource-group proctor --name proctorbackend --startup-file "gunicorn project.project.wsgi --bind=0.0.0.0"
+          az webapp config set --resource-group proctor --name proctorbackend --startup-file "python project/manage.py runserver 0.0.0.0:8000"
+
+          
