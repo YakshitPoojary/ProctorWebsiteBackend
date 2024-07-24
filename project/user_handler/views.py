@@ -1103,7 +1103,8 @@ class CourseAllotmentViewSet(viewsets.ViewSet):
             return Response({"message": "Course Allotment not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class MarksViewSet(viewsets.ViewSet):
-    def list(self, request, year=None, session=None, course_code = None, roll_number=None):
+    def list(self, request, year=None, session=None, course_code=None, roll_number=None):
+        # Fetch all marks with the given filters
         marks = models.Marks.objects.all()
         if roll_number:
             marks = marks.filter(roll_number=roll_number)
@@ -1113,11 +1114,22 @@ class MarksViewSet(viewsets.ViewSet):
             marks = marks.filter(year=year)
         if session:
             marks = marks.filter(session=session)
+
+        # Serialize the marks
         serializer = serializers.MarksSerializer(marks, many=True)
 
+        # Collect all course codes from the serialized data
+        course_codes = set(item['course_code'] for item in serializer.data)
+        
+        # Fetch all courses with the collected course codes
+        courses = models.Course.objects.filter(course_code__in=course_codes).values('course_code', 'course_name')
+        course_dict = {course['course_code']: course['course_name'] for course in courses}
+
+        # Add course names to each mark item
         for item in serializer.data:
-            course = models.Course.objects.get(course_code=item['course_code'])
-            item['course_name'] = course.course_name
+            course_code = item['course_code']
+            item['course_name'] = course_dict.get(course_code, 'Unknown Course')
+
         return Response(serializer.data)
 
     def list2(self, request, roll_number=None):
@@ -1540,7 +1552,7 @@ class DownloadCSV(APIView):
                'COURSE 7', 'COURSE 8', 'COURSE 9', 'COURSE 10', 'COURSE 11', 'COURSE 12', 
                'COURSE 13', 'COURSE 14', 'COURSE 15'] if model == 'Student' else \
               ['BRANCH', 'COURSE CODE', 'COURSE ABBREVIATION', 'COURSE NAME', 'SEM',
-               'SCHEME NAME', 'CREDIT', 'HOURS'] if model == 'Course' else \
+               'SCHEME NAME', 'CREDIT', 'HOURS', 'TUTORIAL'] if model == 'Course' else \
               ['COURSE CODE', 'COURSE ABBREVIATION', 
                'FACULTY ABBREVIATION', 'STAFF ABBREVIATION'] if model == 'CourseAllotment' else \
               ['YEAR', 'SESSION', 'BRANCH', 'COURSE CODE', 'DIVISION', 'STUDENT NAME', 
