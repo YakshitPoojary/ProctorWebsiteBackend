@@ -20,7 +20,7 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 
-DEBUG = False  # Set to False in production
+DEBUG = True  # Set to False in production
 
 ALLOWED_HOSTS = ['*']
 
