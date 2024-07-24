@@ -686,7 +686,7 @@ class StudentViewSet(viewsets.ViewSet):
             valid_courses = [course.course_code for course in all_courses]
             for course in ip_courses:
                 if course and course not in valid_courses:
-                    error_messages.add(f"{course} does not exist for {student_branch}")   
+                    error_messages.add(f"{course} does not exist for {student_branch}") 
                     continue   
             
             
