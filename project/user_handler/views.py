@@ -1384,12 +1384,15 @@ class AttendanceViewSet(viewsets.ViewSet):
         if not month:
             return Response({'error': 'Month information is required.'}, status=status.HTTP_400_BAD_REQUEST)
         
+        validate = lambda x: x.strip().upper()
+        
         file = request.FILES.get('file')
         if file:
             csv_data = csv.reader(TextIOWrapper(file, encoding='utf-8'))
             next(csv_data, None)
-
             for row in csv_data:
+                for i, entry in enumerate(row):
+                    row[i] = validate(entry)
                 year = row[0]
                 session = row[1]
                 branch = row[2]
@@ -1397,6 +1400,7 @@ class AttendanceViewSet(viewsets.ViewSet):
                 student_name = row[4]
                 roll_number = row[5]
                 month_attendance_value = row[6]
+                print(month_attendance_value)
 
                 try:
                     attendance_instance = models.Attendance.objects.get(course_code=course_code, roll_number=roll_number, class_type=class_type)
@@ -1501,7 +1505,7 @@ class DownloadAllMonthAttendanceCSV(APIView):
         
         attendance_instance = models.Attendance.objects.filter(course_code=course_code,year=year,session=session)
 
-        headers = ['Year', 'Session', 'Branch', 'Course Code', 'Student Name', 'Roll Number', 'Class', 'Attendance']
+        headers = ['Year', 'Session', 'Branch', 'Course Code', 'Student Name', 'Roll Number', 'Attendance']
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="attendance_{course_code}_{timezone.now().strftime("%Y%m%d%H%M%S")}.csv"'
@@ -1516,7 +1520,6 @@ class DownloadAllMonthAttendanceCSV(APIView):
                 attendance.course_code,
                 attendance.student_name,
                 attendance.roll_number,
-                attendance.class_type,
             ])
 
         return response
