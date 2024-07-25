@@ -759,17 +759,18 @@ class StudentViewSet(viewsets.ViewSet):
                 serializer.save()
 
                 if not student_instance:
-                    hashed_password = make_password(str(roll_number))
-                    username = email.split('@')[0]
-                    serializer3 = serializers.UserCredentialsSerializer(data={
-                        'email' : email,
-                        'password': hashed_password,
-                        'role': "student", 
-                        'username': username,
-                    })
+                    if not models.UserCredentials.objects.filter(email=email).exists():
+                        hashed_password = make_password(str(roll_number))
+                        username = email.split('@')[0]
+                        serializer3 = serializers.UserCredentialsSerializer(data={
+                            'email' : email,
+                            'password': hashed_password,
+                            'role': "student", 
+                            'username': username,
+                        })
 
-                    if serializer3.is_valid():
-                        serializer3.save()
+                        if serializer3.is_valid():
+                            serializer3.save()
 
                 for course in ip_courses:
                     if course:
@@ -787,6 +788,24 @@ class StudentViewSet(viewsets.ViewSet):
                                 division=division,
                                 roll_number=roll_number,
                                 student_name = student_name,
+                            )
+
+                        try:
+                            attendance_instance = models.Attendance.objects.get(course_code=course, roll_number=roll_number)
+                        except models.Attendance.DoesNotExist:
+                            attendance_instance = None
+                        
+                        if not attendance_instance:
+                            course_instance = models.Course.objects.get(course_code=course)
+                            class_type = "TUT" if course_instance.tutorial != "NO" else "TH/PR"
+                            models.Attendance.objects.create(
+                                year = year,
+                                session = session,
+                                branch = student_branch,
+                                course_code = course,
+                                class_type = class_type,
+                                student_name = student_name,
+                                roll_number = roll_number,
                             )
         if error_messages:
             return Response({
@@ -1814,7 +1833,8 @@ class ChangePassword(viewsets.ViewSet):
 
         if str(cached_otp) != str(otp):
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        cache.delete(email)
         return Response({'message': 'OTP verified'}, status=status.HTTP_200_OK)
     
     def reset_password(self, request):
@@ -1829,7 +1849,6 @@ class ChangePassword(viewsets.ViewSet):
         hashed_password = make_password(new_password)
         user.password = hashed_password
         user.save()
-        cache.delete(email)
 
         return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
 
